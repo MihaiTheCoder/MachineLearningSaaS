@@ -1,0 +1,3 @@
+[submodule "TensorflowComputerVisionAPI/TensorflowComputerVisionAPI/research-models"]
+	path = TensorflowComputerVisionAPI/TensorflowComputerVisionAPI/research-models
+	url = https://github.com/tensorflow/models
