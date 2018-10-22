@@ -29,6 +29,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="runserver.py" />
+    <Compile Include="TensorflowComputerVisionAPI\object_detection_runner.py" />
     <Compile Include="TensorflowComputerVisionAPI\__init__.py" />
     <Compile Include="TensorflowComputerVisionAPI\views.py" />
   </ItemGroup>
@@ -68,6 +69,8 @@
     <Content Include="TensorflowComputerVisionAPI\templates\contact.html" />
     <Content Include="TensorflowComputerVisionAPI\templates\index.html" />
     <Content Include="TensorflowComputerVisionAPI\templates\layout.html" />
+    <Content Include="TensorflowComputerVisionAPI\templates\upload_image.html" />
+    <Content Include="TensorflowComputerVisionAPI\templates\upload_model.html" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">
