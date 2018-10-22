@@ -105,22 +105,15 @@ def upload_file():
             filename = secure_filename(file.filename)
             filepath = os.path.join(object_detection_runner.test_images_path, filename)
             file.save(filepath)
-            model_name = 'ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
-            pbtxt_name = 'mscoco_label_map.pbtxt'
+            #model_name = 'ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
+            #pbtxt_name = 'mscoco_label_map.pbtxt'            
+            model_name = request.form['model']
+            pbtxt_name = request.form['pbtxt']
             return jsonify(object_detection_runner.run_detection(model_name,pbtxt_name, filepath))
 
     models = object_detection_runner.get_models()
     pbtxt_files = object_detection_runner.get_pbtxt_files()
     return render_template('upload_image.html', title='Upload new File', models=models, pbtxt_files=pbtxt_files)
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
-    '''
 
 @app.route('/contact')
 def contact():

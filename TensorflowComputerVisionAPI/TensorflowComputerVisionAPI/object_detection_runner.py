@@ -227,6 +227,6 @@ def get_models():
     return directories
 
 def get_pbtxt_files():
-    pbtxt_files = [file for file in pbtxt_dir_path if file.endswith('.pbtxt')]
+    pbtxt_files = [file for file in os.listdir(pbtxt_dir_path) if file.endswith('.pbtxt')]
     return pbtxt_files
 
