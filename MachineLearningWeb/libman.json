@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "blueimp-gallery@2.33.0",
+      "destination": "wwwroot/blueimp-gallery/"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using MachineLearningWeb.Data;
 using MachineLearningWeb.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MachineLearningWeb.Controllers
 {
@@ -21,10 +22,15 @@ namespace MachineLearningWeb.Controllers
             _context = context;
         }
 
+        private string GetUserID()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
         // GET: MLProjects
         public async Task<IActionResult> Index()
-        {
-            return View(await _context.MLProject.ToListAsync());
+        {            
+            return View(await _context.MLProject.Where(p => p.OwnerId == GetUserID()).ToListAsync());
         }
 
         // GET: MLProjects/Details/5
@@ -37,7 +43,7 @@ namespace MachineLearningWeb.Controllers
 
             var mLProject = await _context.MLProject
                 .FirstOrDefaultAsync(m => m.ID == id);
-            if (mLProject == null)
+            if (mLProject == null || mLProject.OwnerId != GetUserID())
             {
                 return NotFound();
             }
@@ -56,10 +62,11 @@ namespace MachineLearningWeb.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,ProjectType")] MLProject mLProject)
+        public async Task<IActionResult> Create([Bind("ID,ProjectType,ProjectName")] MLProject mLProject)
         {
             if (ModelState.IsValid)
             {
+                mLProject.OwnerId = GetUserID();
                 _context.Add(mLProject);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -76,7 +83,7 @@ namespace MachineLearningWeb.Controllers
             }
 
             var mLProject = await _context.MLProject.FindAsync(id);
-            if (mLProject == null)
+            if (mLProject == null || mLProject.OwnerId != GetUserID())
             {
                 return NotFound();
             }
@@ -88,12 +95,17 @@ namespace MachineLearningWeb.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,ProjectType")] MLProject mLProject)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,ProjectType,ProjectName")] MLProject mLProject)
         {
             if (id != mLProject.ID)
             {
                 return NotFound();
             }
+
+            if (!_context.MLProject.Any(proj => proj.ID == id && proj.OwnerId == GetUserID()))
+                return NotFound();
+
+            mLProject.OwnerId = GetUserID();
 
             if (ModelState.IsValid)
             {
@@ -128,7 +140,7 @@ namespace MachineLearningWeb.Controllers
 
             var mLProject = await _context.MLProject
                 .FirstOrDefaultAsync(m => m.ID == id);
-            if (mLProject == null)
+            if (mLProject == null || mLProject.OwnerId != GetUserID())
             {
                 return NotFound();
             }
@@ -142,6 +154,9 @@ namespace MachineLearningWeb.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var mLProject = await _context.MLProject.FindAsync(id);
+            if (mLProject.OwnerId != GetUserID())
+                return NotFound();
+
             _context.MLProject.Remove(mLProject);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

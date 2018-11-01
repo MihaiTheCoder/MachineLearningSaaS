@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /TensorflowComputerVisionAPI/env
 /TensorflowComputerVisionAPI/TensorflowComputerVisionAPI/trained_models
+/MachineLearningWeb/appsettings.json

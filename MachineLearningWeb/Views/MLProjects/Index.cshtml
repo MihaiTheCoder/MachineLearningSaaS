@@ -13,6 +13,9 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.ProjectName)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.ProjectType)
             </th>
             <th></th>
@@ -21,6 +24,9 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProjectName)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.ProjectType)
             </td>

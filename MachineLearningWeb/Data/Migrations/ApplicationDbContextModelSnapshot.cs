@@ -27,6 +27,8 @@ namespace MachineLearningWeb.Data.Migrations
 
                     b.Property<string>("OwnerId");
 
+                    b.Property<string>("ProjectName");
+
                     b.Property<int>("ProjectType");
 
                     b.HasKey("ID");
