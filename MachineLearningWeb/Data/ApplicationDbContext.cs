@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using MachineLearningWeb.Models;
 
 namespace MachineLearningWeb.Data
 {
@@ -12,5 +13,6 @@ namespace MachineLearningWeb.Data
             : base(options)
         {
         }
+        public DbSet<MachineLearningWeb.Models.MLProject> MLProject { get; set; }
     }
 }
