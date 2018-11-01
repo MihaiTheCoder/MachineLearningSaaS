@@ -37,7 +37,7 @@ def get_image(path):
     return send_from_directory(os.path.abspath(object_detection_runner.test_images_path), path)
 
 def allowed_image(file_name):
-    return file_name.endswith(('.jpg', '.png'))
+    return file_name.lower().endswith(('.jpg', '.png'))
 
 def allowed_model_upload(file_name):
     return file_name.endswith(('.zip', '.tar.gz'))

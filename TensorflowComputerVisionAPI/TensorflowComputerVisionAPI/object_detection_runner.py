@@ -47,7 +47,8 @@ def run_detection(model_name, pbtxt_file, image_path):
     model = None
     category_index = None
     if model_name not in loaded_models:
-        model_path = os.path.join(trained_models_path, model_name, standard_inference_graph_name)
+        model_path = os.path.join(trained_models_path, model_name)
+        model_path = os.path.join(model_path,[f for f in os.listdir(model_path) if f.endswith('.pb')][0])
         pbtxt_path = os.path.join(pbtxt_dir_path, pbtxt_file)
         model = load_model(model_path)
         category_index = load_categories(pbtxt_path)
@@ -100,6 +101,8 @@ def unzip_frozen_inference_graph(zip, directory):
         file_name = os.path.basename(file.name)
         if 'frozen_inference_graph.pb' in file_name:
             tar_file.extract(file, directory)
+        elif file_name.endswith('.pb'):
+            tar_file.extract(file, directory)
 
 def load_model(model_path):
     detection_graph = tf.Graph()
@@ -108,8 +111,7 @@ def load_model(model_path):
         with tf.gfile.GFile(model_path, 'rb') as fid:
             serialized_graph = fid.read()
             od_graph_def.ParseFromString(serialized_graph)
-            tf.import_graph_def(od_graph_def, name='')
-            #return od_graph_def
+            tf.import_graph_def(od_graph_def, name='')            
     return detection_graph
 
 def load_categories(pbtxt_path):
