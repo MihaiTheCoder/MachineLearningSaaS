@@ -14,5 +14,7 @@ namespace MachineLearningWeb.Models
         public bool IsAnnotated { get; set; }
 
         public MLProject Project { get; set; }
+
+        public int ProjectId { get; set; }
     }
 }

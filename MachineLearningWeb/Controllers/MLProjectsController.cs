@@ -9,6 +9,11 @@ using MachineLearningWeb.Data;
 using MachineLearningWeb.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using MachineLearningWeb.Helpers;
+using System.IO;
+using System.Threading;
+using System.Diagnostics;
 
 namespace MachineLearningWeb.Controllers
 {
@@ -88,6 +93,35 @@ namespace MachineLearningWeb.Controllers
                 return NotFound();
             }
             return View(mLProject);
+        }
+
+        [HttpGet("MLProjects/CreateImageModels/{id}")]
+        public async Task<ActionResult> CreateImageModels(int id)
+        {
+            return View(new ImageModel { ProjectId = id });
+        }
+
+        [HttpPost]
+        public async Task UploadImage(int projectId, IFormFile file, CancellationToken cancellationToken)
+        {
+            Debug.Write("UploadImage Started");
+            if (file == null)
+                return;
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            var secureFileName = FileHelper.GetSecureFileName(file.FileName);
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", secureFileName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream, cancellationToken);
+            }
+            ImageModel imageModel = new ImageModel { ProjectId = projectId, FileName = secureFileName };
+
+            _context.Add(imageModel);
+            await _context.SaveChangesAsync();
+            Debug.Write("UploadImage Ended");
         }
 
         // POST: MLProjects/Edit/5

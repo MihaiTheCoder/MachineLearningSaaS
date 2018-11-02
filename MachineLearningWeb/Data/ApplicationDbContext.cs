@@ -14,5 +14,6 @@ namespace MachineLearningWeb.Data
         {
         }
         public DbSet<MachineLearningWeb.Models.MLProject> MLProject { get; set; }
+        public DbSet<MachineLearningWeb.Models.ImageModel> ImageModel { get; set; }
     }
 }

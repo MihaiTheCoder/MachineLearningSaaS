@@ -45,6 +45,22 @@
     </nav>
 
     <partial name="_CookieConsentPartial" />
+    <div class="modal fade" id="pleaseWaitDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 id="progress-modal-header">Processing...</h1>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="container body-content">
         @RenderBody()
@@ -74,7 +90,37 @@
         </script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-
     @RenderSection("Scripts", required: false)
+    <script>
+        var progressModalHeader = document.getElementById('progress-modal-header');
+        var pleaseWait = $('#pleaseWaitDialog');
+
+        function activateProgress(text) {
+            progressModalHeader.innerText = text;
+            pleaseWait.modal('show');
+            document.getElementById('progressBar').style.width = '0%'
+        }
+
+        function setProgress(percent) {
+            percent = percent * 100;
+            document.getElementById('progressBar').style.width = `${percent}%`
+            if (percent == 100) {
+                pleaseWait.modal('hide');
+            }
+        }
+        function move() {
+            var pleaseWait = $('#pleaseWaitDialog');
+
+            showPleaseWait = function () {
+                pleaseWait.modal('show');
+            };
+
+            hidePleaseWait = function () {
+                pleaseWait.modal('hide');
+            };
+            document.getElementById('progressBar').style.width = '80%'
+            showPleaseWait();
+        }
+    </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using MachineLearningWeb.Models;
 using System.IO;
 using System.ComponentModel.DataAnnotations;
+using MachineLearningWeb.Helpers;
 
 namespace MachineLearningWeb.Controllers
 {
@@ -41,7 +42,7 @@ namespace MachineLearningWeb.Controllers
         [HttpGet("staticfiles/{fileName}")]
         public IActionResult StaticFile([Required]string fileName)
         {
-            var secureFileName = GetSecureFileName(fileName);
+            var secureFileName = FileHelper.GetSecureFileName(fileName);
             var file = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", secureFileName);
             string extension = Path.GetExtension(secureFileName)?.ToLower();
 
@@ -49,14 +50,7 @@ namespace MachineLearningWeb.Controllers
                 return BadRequest("Invalid image extension");
 
             return PhysicalFile(file, IMAGE_EXTENSIONS[extension]);
-        }
-
-        private string GetSecureFileName(string fileName)
-        {
-            var invalids = System.IO.Path.GetInvalidFileNameChars();
-            var newName = String.Join("_", fileName.Split(invalids, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
-            return newName;
-        }
+        }        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

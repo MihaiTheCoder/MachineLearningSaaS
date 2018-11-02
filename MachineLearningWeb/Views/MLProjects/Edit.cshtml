@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Edit";
+    var projectId = Model.ID;
 }
 @section AddToHead{
     <link href="@Url.Content("~/blueimp-gallery/css/blueimp-gallery.css")" rel="stylesheet" type="text/css" />
@@ -11,6 +12,8 @@
 
 <h4>MLProject</h4>
 <hr />
+<a asp-area="" asp-controller="MLProjects" asp-action="Index">Home</a>
+<a asp-area="" asp-controller="MLProjects" asp-action="CreateImageModels" asp-route-id="@projectId">Home</a>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">

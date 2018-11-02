@@ -1,0 +1,84 @@
+﻿@model MachineLearningWeb.Models.ImageModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2>Create</h2>
+
+<h4>ImageModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateImageModel" id='file-catcher'>
+            <input id='file-input' type='file' multiple />
+            <button type='submit'>
+                Submit
+            </button>
+        </form>
+        <div id='file-list-display'></div>
+
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var uploadFileUrl = "@Url.Action("UploadImage","MLProjects",new { area="", projectId=Model.ProjectId})";
+        (function () {
+            var fileCatcher = document.getElementById('file-catcher');
+            var fileInput = document.getElementById('file-input');
+            var fileListDisplay = document.getElementById('file-list-display');
+
+            var fileList = [];
+            var renderFileList, sendFile;
+
+            fileCatcher.addEventListener('submit', function (event) {
+                event.preventDefault();
+                activateProgress('Uploading files...');
+                var uploadedFiles = 0;
+                fileList.forEach(function (file) {
+                    
+                    sendFile(file, function () {
+                        uploadedFiles++;
+                        console.log(`ulpoadedFiles:${uploadedFiles}, divide=${uploadedFiles / fileList.length}`);                        
+                        setProgress(uploadedFiles / fileList.length);
+                    });
+                });
+            });
+
+            fileInput.addEventListener('change', function (event) {
+                fileList = [];
+                for (var i = 0; i < fileInput.files.length; i++) {
+                    fileList.push(fileInput.files[i]);
+                }
+                renderFileList();
+            });
+            renderFileList = function () {
+                fileListDisplay.innerText = '';
+                fileList.forEach(function (file, index) {
+                    
+                    
+                    fileListDisplay.innerText += (index + 1) + ':' + file.name + "; ";
+                });
+            };
+
+            sendFile = function (file, onFileUploaded) {
+                var formData = new FormData();
+                var request = new XMLHttpRequest();                
+                formData.set('file', file);
+                request.open('POST', uploadFileUrl);
+                request.onreadystatechange = function () {
+                    if (request.readyState == 4) {
+                        onFileUploaded();
+                    }
+                }
+                request.send(formData);
+            };
+        })();
+    </script>
+}

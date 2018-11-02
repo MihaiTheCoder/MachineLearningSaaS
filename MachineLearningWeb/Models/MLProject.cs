@@ -23,6 +23,8 @@ namespace MachineLearningWeb.Models
         [Display(AutoGenerateField =false, AutoGenerateFilter =false)]
         public string OwnerId { get; set; }
 
+        public ICollection<ImageModel> Images { get; set; }
+
     }
 
     public enum MLProjectType
