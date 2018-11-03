@@ -3,6 +3,9 @@ WORKDIR /app
 EXPOSE 50920
 EXPOSE 44310
 
+RUN apt-get update
+RUN apt-get install -y libgdiplus
+
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
 COPY ["MachineLearningWeb/MachineLearningWeb.csproj", "MachineLearningWeb/"]

@@ -14,6 +14,9 @@ using MachineLearningWeb.Helpers;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Caching.Memory;
+using System.Drawing;
 
 namespace MachineLearningWeb.Controllers
 {
@@ -21,10 +24,12 @@ namespace MachineLearningWeb.Controllers
     public class MLProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _memoryCache;
 
-        public MLProjectsController(ApplicationDbContext context)
+        public MLProjectsController(ApplicationDbContext context, IMemoryCache memoryCache)
         {
             _context = context;
+            _memoryCache = memoryCache;
         }
 
         private string GetUserID()
@@ -88,6 +93,9 @@ namespace MachineLearningWeb.Controllers
             }
 
             var mLProject = await _context.MLProject.FindAsync(id);
+            mLProject.Images = await _context.ImageModel.Where(i => i.ProjectId == mLProject.ID).ToListAsync();
+            _memoryCache.Set<ICollection<ImageModel>>($"images_${mLProject.ID}", mLProject.Images);
+
             if (mLProject == null || mLProject.OwnerId != GetUserID())
             {
                 return NotFound();
@@ -95,8 +103,75 @@ namespace MachineLearningWeb.Controllers
             return View(mLProject);
         }
 
+        private void CacheImageModels(ICollection<ImageModel> images)
+        {
+            _memoryCache.Set(GetImagesKey(), images, DateTimeOffset.FromUnixTimeSeconds(3));
+        }
+
+        private string GetImagesKey()
+        {
+            return $"images_{GetUserID()}";
+        }
+
+        private string GetFileName(int imageModelId)
+        {
+            var images = _memoryCache.GetOrCreate(GetImagesKey(), cacheEntry => GetImagesFromSameProject(imageModelId));
+            ImageModel image;
+            images.TryGetValue(imageModelId, out image);
+            return image?.FileName;
+        }
+
+        private Dictionary<int, ImageModel> GetImagesFromSameProject(int imageModelId)
+        {
+            var imageModel = _context.ImageModel.Include(i => i.Project).FirstOrDefault(i => i.ID == imageModelId);
+            if (imageModel == null || imageModel.Project.OwnerId != GetUserID())
+                return default(Dictionary<int, ImageModel>);
+            else
+                return _context.ImageModel.Where(i => i.ProjectId == imageModel.Project.ID).ToDictionary(i => i.ID, i => i);
+        }
+
+        Dictionary<string, string> IMAGE_EXTENSIONS = new Dictionary<string, string> { { ".jpg", "image/jpeg" }, { ".jpeg", "image/jpeg" }, { ".png", "image/png" } };
+
+        public IActionResult Images(int imageModelId)
+        {            
+            var fileName = GetFileName(imageModelId);
+
+            if (fileName == null)
+                return BadRequest("File does not exist");
+
+            var file = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", fileName);
+            string extension = Path.GetExtension(fileName)?.ToLower();
+
+            return PhysicalFile(file, IMAGE_EXTENSIONS[extension]);
+        }
+
+        public IActionResult Thumb(int imageModelId)
+        {
+            var fileName = GetFileName(imageModelId);
+            string extension = Path.GetExtension(fileName)?.ToLower();
+
+            if (fileName == null)
+                return BadRequest("File does not exist");
+
+            var directory = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", "Thumbs", "120");
+            var thumbPath = Path.Combine(directory, fileName);
+            if(!System.IO.File.Exists(thumbPath))
+            {
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                var originalFilePath = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", fileName);
+                Image image = Image.FromFile(originalFilePath);
+                Image thumb = image.GetThumbnailImage(120, 120, () => false, IntPtr.Zero);
+                thumb.Save(thumbPath);
+            }
+
+
+            return PhysicalFile(thumbPath, IMAGE_EXTENSIONS[extension]);
+        }
+
         [HttpGet("MLProjects/CreateImageModels/{id}")]
-        public async Task<ActionResult> CreateImageModels(int id)
+        public ActionResult CreateImageModels(int id)
         {
             return View(new ImageModel { ProjectId = id });
         }
@@ -109,6 +184,11 @@ namespace MachineLearningWeb.Controllers
                 return;
 
             if (cancellationToken.IsCancellationRequested)
+                return;
+
+            string extension = Path.GetExtension(file.FileName)?.ToLower();
+
+            if (extension == null || !IMAGE_EXTENSIONS.ContainsKey(extension))
                 return;
 
             var secureFileName = FileHelper.GetSecureFileName(file.FileName);

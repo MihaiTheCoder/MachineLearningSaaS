@@ -35,22 +35,7 @@ namespace MachineLearningWeb.Controllers
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        Dictionary<string, string> IMAGE_EXTENSIONS = new Dictionary<string, string> { { ".jpg", "image/jpeg" }, { ".jpeg", "image/jpeg" }, { ".png", "image/png" } };
-
-        [HttpGet("staticfiles/{fileName}")]
-        public IActionResult StaticFile([Required]string fileName)
-        {
-            var secureFileName = FileHelper.GetSecureFileName(fileName);
-            var file = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", secureFileName);
-            string extension = Path.GetExtension(secureFileName)?.ToLower();
-
-            if (extension == null || !IMAGE_EXTENSIONS.ContainsKey(extension))
-                return BadRequest("Invalid image extension");
-
-            return PhysicalFile(file, IMAGE_EXTENSIONS[extension]);
-        }        
+        }             
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

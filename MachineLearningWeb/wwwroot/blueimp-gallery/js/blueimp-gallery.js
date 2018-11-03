@@ -581,7 +581,7 @@
             pageY: event.pageY
           }
         ]
-        this.ontouchstart(event)
+        //this.ontouchstart(event)
       }
     },
 
@@ -593,7 +593,7 @@
             pageY: event.pageY
           }
         ]
-        this.ontouchmove(event)
+        //this.ontouchmove(event)
       }
     },
 

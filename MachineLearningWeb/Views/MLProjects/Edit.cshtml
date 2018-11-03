@@ -13,7 +13,7 @@
 <h4>MLProject</h4>
 <hr />
 <a asp-area="" asp-controller="MLProjects" asp-action="Index">Home</a>
-<a asp-area="" asp-controller="MLProjects" asp-action="CreateImageModels" asp-route-id="@projectId">Home</a>
+<a asp-area="" asp-controller="MLProjects" asp-action="CreateImageModels" asp-route-id="@projectId">Upload Images</a>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
@@ -29,8 +29,58 @@
                 @Html.DisplayFor(model => model.ProjectType)
                 <span asp-validation-for="ProjectType" class="text-danger"></span>
             </div>
+            <div id="blueimp-gallery" class="blueimp-gallery">
+                <div class="slides"></div>                
+                <h3 class="title"></h3>
+                <a class="prev">‹</a>
+                <a class="next">›</a>
+                <a class="close">×</a>
+                <a class="play-pause"></a>
+                <ol class="indicator"></ol>
+            </div>
+            <div id="links">
+                @foreach (var item in Model.Images)
+                {
+                    <a href="@Url.Action("Images","MLProjects",new { imageModelId = item.ID })" title="@item.FileName">
+                        <img src="@Url.Action("Thumb","MLProjects",new { imageModelId = item.ID })" alt="@item.FileName" />
+                    </a>
+                }
+            </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+            <div class="popup-body no-focus-outline" tabindex="-1">
+                <div class="popup-controls">
+                    <button id="delete-region" class="delete-button" aria-label="delete region" title="delete region">
+                        <i class="glyphicon glyphicon-trash">
+                        </i>
+                    </button>
+                    <button id="duplicate-region" class="duplicate-button" aria-label="duplicate region" title="duplicate region">
+                        <i class="glyphicon glyphicon-duplicate">
+
+                        </i>
+                    </button>
+                    <button id="close-region" class="close-button" aria-label="complete editing" title="complete editing">
+                        <i class="glyphicon glyphicon-remove">
+
+                        </i>
+                    </button>
+                </div>
+                <div class="input-group" style="top:42px">
+                    <div style="position:relative">
+                        <div class="autocomplete" style="width:300px;">
+                            <input id="region-name-input" type="text" name="region-name" placeholder="Region Name" list="object-tags" />
+                            <datalist id="object-tags">
+                                <option>El ciupos</option>Trebuie adaugate tags pe proiect, si apoi puse aici, aici trebuie sa adaugam si din javascript, sa nu ne trebuiasca refresh
+                            </datalist>
+                        </div>
+                    </div>
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" aria-label="tag region" title="tag region" type="submit">
+                            <i class="glyphicon glyphicon-plus"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -42,5 +92,70 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <link href="@Url.Content("~/blueimp-gallery/js/blueimp-gallery.js")" rel="stylesheet" />
+    <script src="@Url.Content("~/blueimp-gallery/js/blueimp-gallery.js")"></script>
+    <script>
+        document.getElementById('links').onclick = function (event) {
+            event = event || window.event;
+            var target = event.target || event.srcElement,
+                link = target.src ? target.parentNode : target,                
+                links = this.getElementsByTagName('a');
+            blueimp.Gallery(links, {
+                index: link,
+                event: event,
+                onslide: function (index, slide) {
+                    // Callback function executed on slide change.
+                    console.log(`index:${index}, slide:${slide}`);
+                    initDraw(slide);
+                }
+            });
+        }
+
+        function initDraw(canvas) {
+            function setMousePosition(e) {
+                var ev = e || window.event;
+                if (ev.pageX) { //Moz
+                    mouse.x = ev.pageX + window.pageXOffset;
+                    mouse.y = ev.pageY + window.pageYOffset;
+                } else if (ev.clientX) { //IE
+                    mouse.x = ev.clientX + document.body.scrollLeft;
+                    mouse.y = ev.clientY + document.body.scrollTop;
+                }
+            }
+            var mouse = {
+                x: 0,
+                y: 0,
+                startX: 0,
+                startY: 0
+            };
+            var element = null;
+
+            canvas.onmousemove = function (e) {
+                setMousePosition(e);
+                if (element !== null) {
+                    element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
+                    element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
+                    element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x + 'px' : mouse.startX + 'px';
+                    element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y + 'px' : mouse.startY + 'px';
+                }
+            }
+
+            canvas.onclick = function (e) {
+                if (element !== null) {
+                    element = null;
+                    canvas.style.cursor = "default";
+                    console.log("finsihed.");
+                } else {
+                    console.log("begun.");
+                    mouse.startX = mouse.x;
+                    mouse.startY = mouse.y;
+                    element = document.createElement('div');
+                    element.className = 'rectangle'
+                    element.style.left = mouse.x + 'px';
+                    element.style.top = mouse.y + 'px';
+                    canvas.appendChild(element)
+                    canvas.style.cursor = "crosshair";
+                }
+            }
+        }
+    </script>
 }
