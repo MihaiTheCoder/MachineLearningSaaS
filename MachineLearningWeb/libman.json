@@ -5,6 +5,10 @@
     {
       "library": "blueimp-gallery@2.33.0",
       "destination": "wwwroot/blueimp-gallery/"
+    },
+    {
+      "library": "cropperjs@1.4.3",
+      "destination": "wwwroot/cropperjs/"
     }
   ]
 }

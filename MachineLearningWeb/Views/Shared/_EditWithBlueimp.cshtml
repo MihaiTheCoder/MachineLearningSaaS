@@ -5,7 +5,6 @@
     var projectId = Model.ID;
 }
 @section AddToHead{
-    <link href="@Url.Content("~/cropperjs/cropper.css")" rel="stylesheet" type="text/css" />
     <link href="@Url.Content("~/blueimp-gallery/css/blueimp-gallery.css")" rel="stylesheet" type="text/css" />
 }
 
@@ -83,7 +82,16 @@
                     </div>
                 </div>
             </div>
-
+            <div id="selected-region" class="selected-region" style="display:none">
+                <span class="movable-region top-left"></span>
+                <span class="movable-region top-right"></span>
+                <span class="movable-region bottom-left"></span>
+                <span class="movable-region bottom-right"></span>
+                <span class="movable-region top-edge"></span>
+                <span class="movable-region bottom-edge"></span>
+                <span class="movable-region left-edge"></span>
+                <span class="movable-region right-edge"></span>
+            </div>
         </form>
     </div>
 </div>
@@ -94,15 +102,9 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="@Url.Content("~/cropperjs/cropper.js")"></script>
     <script src="@Url.Content("~/blueimp-gallery/js/blueimp-gallery.js")"></script>
     <script>
         regionPopup = document.getElementById('tag-region-popup');
-        //import Cropper from 'cropperjs';
-        function moveRegionPopup() {
-
-        }
-
         selectedRegion = document.getElementById('selected-region');
         document.getElementById('links').onclick = function (event) {
             event = event || window.event;
@@ -115,45 +117,139 @@
                 onslide: function (index, slide) {
                     // Callback function executed on slide change.
                     console.log(`index:${index}, slide:${slide}`);
-                    /*initDraw(slide, function (left, top, width, height) {
+                    initDraw(slide, function (left, top, width, height) {
                         regionPopup.style.zIndex = 9999999;
                         regionPopup.style.display = 'block'
                         regionPopup.style.left = (left - regionPopup.getBoundingClientRect().width) + "px";
                         regionPopup.style.top = top + "px";
                         slide.appendChild(regionPopup);
-                    });*/
-                    var image = slide.childNodes[0];
-                    const cropper = new Cropper(image, {
-                        autoCrop: false,
-                        cropend(event) {
-                            console.log("cropEnd");
-                            cropBox = cropper.getCropBoxData();
-                            canvasData = cropper.getCanvasData();
-                            var relativeCoords = {
-                                left: (cropBox.left - canvasData.left) / canvasData.width, top: (cropBox.top - canvasData.top) / canvasData.height,
-                                width: cropBox.width / canvasData.width, height: cropBox.height / canvasData.height
-                            };
-                            absoluteCoords = {
-                                left: canvasData.naturalWidth * relativeCoords.left, width: canvasData.naturalWidth * relativeCoords.width,
-                                top: canvasData.top * relativeCoords.top, height: canvasData.naturalHeight * relativeCoords.height
-                            };
-                            
-                            console.log(relativeCoords)
-                            console.log(absoluteCoords);
-                            regionPopup.style.zIndex = 9999999;
-                            regionPopup.style.display = 'block'
-                            var boundingRect = regionPopup.getBoundingClientRect()
-                            regionPopup.style.left = (cropBox.left) + "px";
-                            regionPopup.style.top = (cropBox.top - boundingRect.height - 20)+ "px";
-                            slide.appendChild(regionPopup);
-                        }
                     });
                 },
                 onslideend: function (index, slide) {
-                    //regionPopup.style.display = 'none';
-                    //selectedRegion.style.display = 'none';
+                    regionPopup.style.display = 'none';
+                    selectedRegion.style.display = 'none';
                 }
             });
-        }        
+        }
+
+        function initDraw(canvas, onDone) {
+            function setMousePosition(e) {
+                var ev = e || window.event;
+                if (ev.pageX) { //Moz
+                    mouse.x = ev.pageX + window.pageXOffset;
+                    mouse.y = ev.pageY + window.pageYOffset;
+                } else if (ev.clientX) { //IE
+                    mouse.x = ev.clientX + document.body.scrollLeft;
+                    mouse.y = ev.clientY + document.body.scrollTop;
+                }
+            }
+            var mouse = {
+                x: 0,
+                y: 0,
+                startX: 0,
+                startY: 0
+            };
+            var element = null;
+
+            var width = 0, height = 0, left = 0, top = 0;
+            var movableRegion = '';
+            var isStartEdit = false;
+
+            $('.movable-region').click(function () {
+                movableRegion = this.getAttribute('class');
+                element = this.parentNode.parentNode;
+            });
+
+            function isInitialSelection() {
+                return movableRegion == '';
+            }
+
+            function shouldMoveWidth() {
+                return isInitialSelection() || movableRegion.includes('right');
+            }
+
+            function shouldMoveHeight() {
+                return isInitialSelection() || movableRegion.includes('bottom');
+            }
+
+            function shouldMoveLeft() {
+                return movableRegion.includes('left');
+            }
+
+            function shouldMoveTop() {
+                return movableRegion.includes('top');
+            }
+
+            canvas.onmousemove = function (e) {
+                setMousePosition(e);
+                if (element == null)
+                    return;
+
+
+                if (isInitialSelection()) {
+                    left = (mouse.x - mouse.startX < 0) ? mouse.x : mouse.startX;
+                } else if (shouldMoveLeft()) {
+                    nextWidth = width - (mouse.x - left);
+                    if (nextWidth > 0) {
+                        width = nextWidth;
+                        left = mouse.x;
+                    }
+                }
+
+                if (isInitialSelection()) {
+                    top = (mouse.y - mouse.startY < 0) ? mouse.y : mouse.startY;
+                } else if (shouldMoveTop()) {
+                    nextHeight = height - (mouse.y - top);
+                    if (nextHeight > 0) {
+                        top = mouse.y;
+                        height = nextHeight;
+                    }
+                }
+
+                if (shouldMoveWidth())
+                    width = Math.abs(mouse.x - mouse.startX);
+
+                if (shouldMoveHeight())
+                    height = Math.abs(mouse.y - mouse.startY);
+
+                element.style.width = width + 'px';
+                element.style.height = height + 'px';
+                element.style.left = left + 'px';
+                element.style.top = top + 'px';
+
+            }
+
+            canvas.onclick = function (e) {
+                if (element !== null) {
+
+                    if (!isInitialSelection()) {
+                        if (!isStartEdit) {
+                            isStartEdit = true
+                            return
+                        } else {
+                            isStartEdit = false;
+                        }
+                    }
+                    selectedRegion.style.display = 'block';
+                    element.appendChild(selectedRegion);
+                    element = null;
+                    canvas.style.cursor = "default";
+                    console.log("finsihed.");
+                    onDone(left, top, width, height);
+                } else {
+                    if (regionPopup.style.display == 'block')
+                        return;
+                    console.log("begun.");
+                    mouse.startX = mouse.x;
+                    mouse.startY = mouse.y;
+                    element = document.createElement('div');
+                    element.className = 'rectangle'
+                    element.style.left = mouse.x + 'px';
+                    element.style.top = mouse.y + 'px';
+                    canvas.appendChild(element);
+                    canvas.style.cursor = "crosshair";
+                }
+            }
+        }
     </script>
 }
