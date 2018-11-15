@@ -4,14 +4,16 @@ using MachineLearningWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MachineLearningWeb.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181113122559_Tags")]
+    partial class Tags
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,25 +38,6 @@ namespace MachineLearningWeb.Data.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("ImageModel");
-                });
-
-            modelBuilder.Entity("MachineLearningWeb.Models.ImageTag", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ImageId");
-
-                    b.Property<string>("RelativeCoords");
-
-                    b.Property<int>("TagId");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("ImageId");
-
-                    b.ToTable("ImageTags");
                 });
 
             modelBuilder.Entity("MachineLearningWeb.Models.MLProject", b =>
@@ -85,8 +68,6 @@ namespace MachineLearningWeb.Data.Migrations
                     b.Property<string>("Name");
 
                     b.Property<int>("ProjectId");
-
-                    b.Property<int>("TagShortcut");
 
                     b.HasKey("ID");
 
@@ -268,14 +249,6 @@ namespace MachineLearningWeb.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("MachineLearningWeb.Models.ImageTag", b =>
-                {
-                    b.HasOne("MachineLearningWeb.Models.ImageModel", "Image")
-                        .WithMany("ImageTags")
-                        .HasForeignKey("ImageId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("MachineLearningWeb.Models.MLProject", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Owner")
@@ -286,7 +259,7 @@ namespace MachineLearningWeb.Data.Migrations
             modelBuilder.Entity("MachineLearningWeb.Models.Tag", b =>
                 {
                     b.HasOne("MachineLearningWeb.Models.MLProject", "Project")
-                        .WithMany("Tags")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

@@ -18,73 +18,103 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ID" />
-            <div class="form-group">
-                <label asp-for="ProjectName" class="control-label"></label>
-                <input asp-for="ProjectName" class="form-control" />
-                <span asp-validation-for="ProjectName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectType" class="control-label"></label>
-                @Html.DisplayFor(model => model.ProjectType)
-                <span asp-validation-for="ProjectType" class="text-danger"></span>
-            </div>
-            <div id="blueimp-gallery" class="blueimp-gallery">
-                <div class="slides"></div>
-                <h3 class="title"></h3>
-                <a class="prev">‹</a>
-                <a class="next">›</a>
-                <a class="close">×</a>
-                <a class="play-pause"></a>
-                <ol class="indicator"></ol>
-            </div>
-            <div id="links">
-                @foreach (var item in Model.Images)
-                {
-                    <a href="@Url.Action("Images","MLProjects",new { imageModelId = item.ID })" title="@item.FileName">
-                        <img src="@Url.Action("Thumb","MLProjects",new { imageModelId = item.ID })" alt="@item.FileName" />
-                    </a>
-                }
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
-            <div id="tag-region-popup" class="popup-body no-focus-outline" tabindex="-1" style="height:6em; width:16em;">
-                <div class="popup-controls">
-                    <button id="delete-region" class="delete-button" aria-label="delete region" title="delete region">
-                        <i class="glyphicon glyphicon-trash">
-                        </i>
-                    </button>
-                    <button id="duplicate-region" class="duplicate-button" aria-label="duplicate region" title="duplicate region">
-                        <i class="glyphicon glyphicon-duplicate">
-
-                        </i>
-                    </button>
-                    <button id="close-region" class="close-button" aria-label="complete editing" title="complete editing">
-                        <i class="glyphicon glyphicon-remove">
-
-                        </i>
-                    </button>
+            <div id="initial">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="ID" />
+                <div class="form-group">
+                    <label asp-for="ProjectName" class="control-label"></label>
+                    <input asp-for="ProjectName" class="form-control" />
+                    <span asp-validation-for="ProjectName" class="text-danger"></span>
                 </div>
-                <div class="input-group">
-                    <div style="position:relative">
-                        <div class="autocomplete" style="width:13em;">
-                            <input id="region-name-input" type="text" name="region-name" placeholder="Region Name" list="object-tags" style="height:2.3em" />
-                            <datalist id="object-tags">
-                                <option>El ciupos</option>Trebuie adaugate tags pe proiect, si apoi puse aici, aici trebuie sa adaugam si din javascript, sa nu ne trebuiasca refresh
-                            </datalist>
-                        </div>
-                    </div>
-                    <div class="input-group-btn">
-                        <button class="btn btn-default" aria-label="tag region" title="tag region" type="submit">
-                            <i class="glyphicon glyphicon-plus"></i>
+                <div class="form-group">
+                    <label asp-for="ProjectType" class="control-label"></label>
+                    @Html.DisplayFor(model => model.ProjectType)
+                    <span asp-validation-for="ProjectType" class="text-danger"></span>
+                </div>
+                <div id="blueimp-gallery" class="blueimp-gallery">
+                    <div class="slides"></div>
+                    <h3 class="title"></h3>
+                    <a class="prev">‹</a>
+                    <a class="next">›</a>
+                    <a class="close">×</a>
+                    <a class="play-pause"></a>
+                    <ol class="indicator"></ol>
+                </div>
+                <div id="links">
+                    @foreach (var item in Model.Images)
+                    {
+                        <a href="@Url.Action("Images","MLProjects",new { imageModelId = item.ID })" title="@item.FileName">
+                            <img src="@Url.Action("Thumb","MLProjects",new { imageModelId = item.ID })" alt="@item.FileName" />
+                        </a>
+                    }
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Save" class="btn btn-default" />
+                    <input id="tag-objects" type="button" value="tag objects" class="btn btn-default" onclick="tagObjects()" />
+                </div>
+                <div id="tag-region-popup" class="popup-body no-focus-outline" tabindex="-1" style="height:6em; width:16em;">
+                    <div class="popup-controls">
+                        <button id="delete-region" class="delete-button" aria-label="delete region" title="delete region">
+                            <i class="glyphicon glyphicon-trash">
+                            </i>
                         </button>
+                        <button id="duplicate-region" class="duplicate-button" aria-label="duplicate region" title="duplicate region">
+                            <i class="glyphicon glyphicon-duplicate">
+
+                            </i>
+                        </button>
+                        <button id="close-region" class="close-button" aria-label="complete editing" title="complete editing">
+                            <i class="glyphicon glyphicon-remove">
+
+                            </i>
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <div style="position:relative">
+                            <div class="autocomplete" style="width:13em;">
+                                <input id="region-name-input" type="text" name="region-name" placeholder="Region Name" list="object-tags" style="height:2.3em" />
+                                <datalist id="object-tags">
+                                    <option>El ciupos</option>Trebuie adaugate tags pe proiect, si apoi puse aici, aici trebuie sa adaugam si din javascript, sa nu ne trebuiasca refresh
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" aria-label="tag region" title="tag region" type="submit">
+                                <i class="glyphicon glyphicon-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
         </form>
+    </div>
+    <div id="obj-tagging" style="display:none;">
+        <div class="col-md-9">
+            <div id="img-container" class="img-container">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="clearfix">
+                <div class="img-preview" style="width: 256px; height: 144px;">
+
+                </div>
+            </div>
+            <div class="list-group" style="top:144px">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Tag</span>
+                    <input type="text" class="form-control" id="object-tag"/>
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" aria-label="Add Tag" title="tag region" type="button" onclick="addTag()">
+                            <i class="glyphicon glyphicon-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="tags-container">
+                    @Html.Partial("_tags", Model.Tags)
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -96,64 +126,201 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="@Url.Content("~/cropperjs/cropper.js")"></script>
     <script src="@Url.Content("~/blueimp-gallery/js/blueimp-gallery.js")"></script>
+    
     <script>
-        regionPopup = document.getElementById('tag-region-popup');
-        //import Cropper from 'cropperjs';
-        function moveRegionPopup() {
+        var images = @Html.Raw(Json.Serialize(Model.Images.Select(i => new {
+                    url =Url.Action("Images", "MLProjects", new { imageModelId = i.ID }),
+                    alt =i.FileName,
+                    imageModelId = i.ID,
+                    imageTags = i.ImageTags.Select(it => new { id= it.ID, it.ImageId, it.RelativeCoords, it.TagId})
+                }).ToList()));
+        var postTagUrlTemplate = "@Url.Action("Tags", "MLProjects")/@Model.ID";
+        var imageTagUrlTemplate = "@Url.Action("ImageTags", "MLProjects")";
+        
+        var tagInput = document.getElementById('object-tag');
+        var tagContainer = document.getElementById('tags-container');
+        var imgContainer = document.getElementById('img-container');   
+        var currentImageIndex = -1, currentImageId = -1, currentImage = null;
+        var editedImageTagIndex = -1;
+        var currentRelativeCoords = null;    
+        var cropper = null;
+        
 
-        }
+        $(document).on('keyup', function (evt) {
+            evt = evt || window.event;
+            console.log("keydown: " + evt.keyCode);
+            var stringKeyCode = String.fromCharCode(evt.keyCode);
+            var intKeyCode = parseInt(stringKeyCode);
+            if (currentRelativeCoords != null && !isNaN(intKeyCode)) {
+                var tag = getTag(intKeyCode);
+                var data = { imageId: currentImageId, relativeCoords: currentRelativeCoords, tagId: tag.id }
+                type = "post"
+                if (tag != null) {
+                    if (editedImageTagIndex >= 0) {
+                        data.id = images[currentImageIndex].imageTags[editedImageTagIndex].id;
+                        type = "put";
+                    }
 
-        selectedRegion = document.getElementById('selected-region');
-        document.getElementById('links').onclick = function (event) {
-            event = event || window.event;
-            var target = event.target || event.srcElement,
-                link = target.src ? target.parentNode : target,
-                links = this.getElementsByTagName('a');
-            blueimp.Gallery(links, {
-                index: link,
-                event: event,
-                onslide: function (index, slide) {
-                    // Callback function executed on slide change.
-                    console.log(`index:${index}, slide:${slide}`);
-                    /*initDraw(slide, function (left, top, width, height) {
-                        regionPopup.style.zIndex = 9999999;
-                        regionPopup.style.display = 'block'
-                        regionPopup.style.left = (left - regionPopup.getBoundingClientRect().width) + "px";
-                        regionPopup.style.top = top + "px";
-                        slide.appendChild(regionPopup);
-                    });*/
-                    var image = slide.childNodes[0];
-                    const cropper = new Cropper(image, {
-                        autoCrop: false,
-                        cropend(event) {
-                            console.log("cropEnd");
-                            cropBox = cropper.getCropBoxData();
-                            canvasData = cropper.getCanvasData();
-                            var relativeCoords = {
-                                left: (cropBox.left - canvasData.left) / canvasData.width, top: (cropBox.top - canvasData.top) / canvasData.height,
-                                width: cropBox.width / canvasData.width, height: cropBox.height / canvasData.height
-                            };
-                            absoluteCoords = {
-                                left: canvasData.naturalWidth * relativeCoords.left, width: canvasData.naturalWidth * relativeCoords.width,
-                                top: canvasData.top * relativeCoords.top, height: canvasData.naturalHeight * relativeCoords.height
-                            };
-                            
-                            console.log(relativeCoords)
-                            console.log(absoluteCoords);
-                            regionPopup.style.zIndex = 9999999;
-                            regionPopup.style.display = 'block'
-                            var boundingRect = regionPopup.getBoundingClientRect()
-                            regionPopup.style.left = (cropBox.left) + "px";
-                            regionPopup.style.top = (cropBox.top - boundingRect.height - 20)+ "px";
-                            slide.appendChild(regionPopup);
+                    $.ajax({
+                        url: imageTagUrlTemplate,
+                        type: type,
+                        data: data,
+                        success: function (response) {
+                            console.log(response);
+                            drawInactiveRegion(currentRelativeCoords, editedImageTagIndex);
+                            clearCrop();
                         }
                     });
+                }
+            } else if (evt.keyCode == 46) {//delete
+                if (currentImageIndex < 0 || editedImageTagIndex < 0)
+                    return;
+                imageTagId = images[currentImageIndex].imageTags[editedImageTagIndex].id;
+                $.ajax({
+                    url: imageTagUrlTemplate + `/${imageTagId}`,
+                    type: 'DELETE',
+                    success: function (response) {
+                        console.log(response);
+                        clearCrop();
+                    }
+                });
+            }            
+
+            console.log(stringKeyCode);
+        });
+
+        function clearCrop() {
+            cropper.clear();
+            editedImageTagIndex = -1;
+            currentRelativeCoords = null;
+        }
+
+        function getTag(shortcut) {
+            for (var i = 0; i < all_tags.length; i++) {
+                if (all_tags[i].tagShortcut == shortcut)
+                    return all_tags[i];
+            }
+
+            return null;
+        }
+
+        function addTag() {            
+            $.post(postTagUrlTemplate, { tagName: tagInput.value }, function (data, status) {
+                tagContainer.innerHTML = data;
+                tagInput.value = '';                
+            });
+        }
+
+        function convertCropBoxToRelative(cropbox) {
+            var canvasData = cropper.getCanvasData();
+            var relativeCoords = {
+                left: (cropbox.left - canvasData.left) / canvasData.width, top: (cropbox.top - canvasData.top) / canvasData.height,
+                width: cropbox.width / canvasData.width, height: cropbox.height / canvasData.height
+            };
+            return relativeCoords;
+        }
+
+        function convertRelativeToCropBox(coords) {
+            var canvasData = cropper.getCanvasData();
+            var cropBox = {
+                left: (coords.left * canvasData.width) + canvasData.left, top: (coords.top * canvasData.height) + canvasData.top,
+                width: coords.width * canvasData.width, height: coords.height* canvasData.height
+            };
+            return cropBox;
+        }
+
+        function onCropperReady() {            
+            for (var i = 0; i < currentImage.imageTags.length; i++) {
+                var coords = currentImage.imageTags[i].relativeCoords;       
+                drawInactiveRegion(coords, i);
+            }
+        }
+
+        function drawInactiveRegion(relativeCoords, imageTagIndex) {
+            drawRectangle(relativeCoords, imageTagIndex, function (rectangleDiv, relativeCoords, index) {
+                rectangleDiv.remove();
+                cropper.crop();
+                cropper.setCropBoxData(convertRelativeToCropBox(relativeCoords));
+                editedImageTagIndex = index;
+                currentRelativeCoords = relativeCoords;
+            });
+        }
+
+        function drawRectangle(relativeCoords, index, onClickFunc) {
+            var div = imgContainer.children[currentImageIndex];
+            var cropBox = convertRelativeToCropBox(relativeCoords);
+            var rectangleDiv = document.createElement("div");
+            rectangleDiv.style.left = cropBox.left + "px";
+            rectangleDiv.style.top = cropBox.top + "px";
+            rectangleDiv.style.width = cropBox.width + "px";
+            rectangleDiv.style.height = cropBox.height + "px";
+            rectangleDiv.style.border = "1px solid #FF0000";
+            rectangleDiv.classList = "rectangle";
+            rectangleDiv.onclick = function () {
+                onClickFunc(rectangleDiv, relativeCoords, index);
+            };
+            div.appendChild(rectangleDiv);
+        }
+
+        function setCropper(div, relativeCoords) {
+            getCropBoxData(relativeCoords)
+            console.log(div);
+        }
+
+        function showImage(index) {
+            node = imgContainer.children[index];
+            if (currentImageIndex != -1) {
+                imgContainer.children[currentImageIndex].style.display = 'none';
+            }
+            node.style.display = 'block';
+            currentImageIndex = index;
+            currentImage = images[currentImageIndex];
+            currentImageId = currentImage.imageModelId;
+
+            cropper = new Cropper(node.children[0], {
+                autoCrop: false,
+                viewMode: 1,
+                preview: '.img-preview',
+                ready() {
+                    onCropperReady(cropper.getCanvasData());
                 },
-                onslideend: function (index, slide) {
-                    //regionPopup.style.display = 'none';
-                    //selectedRegion.style.display = 'none';
+                cropend(event) {
+                    console.log("cropEnd");
+                    cropBox = cropper.getCropBoxData();
+                    canvasData = cropper.getCanvasData();
+                    var relativeCoords = convertCropBoxToRelative(cropBox);                    
+
+                    currentRelativeCoords = relativeCoords;
+
+                    absoluteCoords = {
+                        left: canvasData.naturalWidth * relativeCoords.left, width: canvasData.naturalWidth * relativeCoords.width,
+                        top: canvasData.top * relativeCoords.top, height: canvasData.naturalHeight * relativeCoords.height
+                    };
+
+                    console.log(relativeCoords)
+                    console.log(absoluteCoords);
                 }
             });
-        }        
+        }
+
+        function tagObjects() {
+            document.getElementById('initial').style.display = 'none';
+            document.getElementById('obj-tagging').style.display = 'block';
+                     
+            for (var i = 0; i < Math.min(3, images.length); i++) {
+                var img = images[i];
+                var imgDiv = document.createElement("div");
+                imgDiv.style.display = 'none';
+                var node = document.createElement("img");
+                node.src = img.url;
+                node.alt = img.alt;                
+                node.classList = "img-container";
+                imgDiv.setAttribute("data-image-id", img.imageModelId);
+                imgDiv.appendChild(node);
+                imgContainer.appendChild(imgDiv);
+            }
+
+            showImage(0);
+        }       
     </script>
 }

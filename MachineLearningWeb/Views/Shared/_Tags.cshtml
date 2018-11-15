@@ -1,0 +1,12 @@
+﻿@model IEnumerable<MachineLearningWeb.Models.Tag>
+
+<script>
+    var all_tags = @Html.Raw(Json.Serialize(Model.Select(m => new { ID = m.ID, TagShortcut = m.TagShortcut, Name = m.Name })));
+</script>
+@foreach (var item in Model)
+{
+    <a href="#" class="list-group-item">@item.TagShortcut - @item.Name</a>
+}
+
+
+

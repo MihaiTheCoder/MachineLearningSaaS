@@ -84,6 +84,93 @@ namespace MachineLearningWeb.Controllers
             return View(mLProject);
         }
 
+        [HttpPost("MLProjects/Tags/{projectId}")]
+        public async Task<IActionResult> CreateTag(int projectId, string tagName)
+        {
+            var project = _context.MLProject.Find(projectId);
+            var tag = new Tag { ProjectId = project.ID, Name = tagName };
+            if (project == null || project.OwnerId != GetUserID())
+            {
+                return NotFound();
+            }
+            if (string.IsNullOrWhiteSpace(tagName))
+                return BadRequest();
+
+            _context.Add(tag);
+            await _context.SaveChangesAsync();
+
+            var tags = _context.Tags.Where(t => t.ProjectId == project.ID);
+            var tagShortcut = tags.Count(t => t.ID < tag.ID) + 1;
+            tag.TagShortcut = tagShortcut;
+
+            await _context.SaveChangesAsync();
+
+            return PartialView("_Tags", tags);
+        }
+
+        [HttpPost("MLProjects/ImageTags")]
+        public async Task<IActionResult> AddImageTag(ImageTag imageTag)
+        {
+            var project = _context.ImageModel.Include(i => i.Project).FirstOrDefault(i => i.ID == imageTag.ImageId)?.Project;
+
+            if (project == null || project.OwnerId != GetUserID())
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                var imageTags = _context.ImageTags.Where(i => i.ImageId == imageTag.ImageId).ToList();
+                var imageTagSameRegion = imageTags.FirstOrDefault(i => i.RelativeCoords.Equals(imageTag.RelativeCoords));
+                if (imageTagSameRegion == null)
+                    _context.Add(imageTag);
+                else
+                    imageTagSameRegion.TagId = imageTag.TagId;
+
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok();
+        }
+
+        [HttpPut("MLProjects/ImageTags")]
+        public async Task<IActionResult> UpdateImageTag(ImageTag imageTag)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var imageTagDb =_context.ImageTags.Include(it => it.Image.Project).FirstOrDefault(it => it.ID == imageTag.ID);
+            var project = imageTagDb?.Image.Project;
+
+            if (project == null || project.OwnerId != GetUserID())
+            {
+                return NotFound();
+            }
+            _context.Entry(imageTagDb).State = EntityState.Detached;
+            _context.Update(imageTag);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete("MLProjects/ImageTags/{imageTagID}")]
+        public async Task<IActionResult> DeleteImageTag(int imageTagID)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var imageTag = _context.ImageTags.Include(it => it.Image.Project).FirstOrDefault(it => it.ID == imageTagID);
+            var project = imageTag?.Image.Project;
+            if (project == null || project.OwnerId != GetUserID())
+            {
+                return NotFound();
+            }
+
+            _context.ImageTags.Remove(imageTag);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+            
+
         // GET: MLProjects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -92,15 +179,21 @@ namespace MachineLearningWeb.Controllers
                 return NotFound();
             }
 
-            var mLProject = await _context.MLProject.FindAsync(id);
-            mLProject.Images = await _context.ImageModel.Where(i => i.ProjectId == mLProject.ID).ToListAsync();
-            _memoryCache.Set<ICollection<ImageModel>>($"images_${mLProject.ID}", mLProject.Images);
+            var mLProjectTask = _context.MLProject.FindAsync(id);
+            var mLProjectImages = _context.ImageModel.Include(i=>i.ImageTags).Where(i => i.ProjectId == id).ToListAsync();
+            var mLProjectTags =_context.Tags.Where(t => t.ProjectId == id).ToListAsync();
+            await Task.WhenAll(new Task[] {mLProjectTask, mLProjectImages, mLProjectTags });
+            var mlProject = mLProjectTask.Result;
+            mlProject.Images = mLProjectImages.Result;
+            mlProject.Tags = mLProjectTags.Result;
+            
+            _memoryCache.Set($"images_${mlProject.ID}", mlProject.Images);
 
-            if (mLProject == null || mLProject.OwnerId != GetUserID())
+            if (mlProject == null || mlProject.OwnerId != GetUserID())
             {
                 return NotFound();
             }
-            return View(mLProject);
+            return View(mlProject);
         }
 
         private void CacheImageModels(ICollection<ImageModel> images)

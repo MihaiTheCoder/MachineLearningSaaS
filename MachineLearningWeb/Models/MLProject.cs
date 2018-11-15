@@ -25,6 +25,8 @@ namespace MachineLearningWeb.Models
 
         public ICollection<ImageModel> Images { get; set; }
 
+        public ICollection<Tag> Tags { get; set; }
+
     }
 
     public enum MLProjectType

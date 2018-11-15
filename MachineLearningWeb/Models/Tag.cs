@@ -5,18 +5,16 @@ using System.Threading.Tasks;
 
 namespace MachineLearningWeb.Models
 {
-    public class ImageModel
+    public class Tag
     {
         public int ID { get; set; }
 
-        public string FileName { get; set; }
-
-        public bool IsAnnotated { get; set; }
-
-        public MLProject Project { get; set; }
+        public string Name { get; set; }
 
         public int ProjectId { get; set; }
 
-        public ICollection<ImageTag> ImageTags { get; set; }
+        public MLProject Project { get; set; }
+        
+        public int TagShortcut { get; set; }
     }
 }

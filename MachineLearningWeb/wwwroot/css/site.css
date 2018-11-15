@@ -1,4 +1,17 @@
-﻿#links img {
+﻿.img-preview {
+    float: left;
+    margin-bottom: .5rem;
+    margin-right: .5rem;
+    overflow:hidden;
+}
+
+.img-container {
+    min-height:500px;
+    min-width:500px;
+    position:relative;
+}
+
+img {
     max-width: 100%; /* This rule is very important, please do not ignore this! */
 }
 
@@ -121,9 +134,9 @@ button.close-button {
     right:0px;
 }
 
-.rectangle {
-    border: 1px solid #FF0000;
+.rectangle {    
     position: absolute;
+    cursor: pointer;
 }
 
 /* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification\ 

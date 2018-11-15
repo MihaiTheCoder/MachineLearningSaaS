@@ -4,14 +4,16 @@ using MachineLearningWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MachineLearningWeb.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181114115022_AddImageTag")]
+    partial class AddImageTag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,8 +53,6 @@ namespace MachineLearningWeb.Data.Migrations
                     b.Property<int>("TagId");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("ImageId");
 
                     b.ToTable("ImageTags");
                 });
@@ -265,14 +265,6 @@ namespace MachineLearningWeb.Data.Migrations
                     b.HasOne("MachineLearningWeb.Models.MLProject", "Project")
                         .WithMany("Images")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("MachineLearningWeb.Models.ImageTag", b =>
-                {
-                    b.HasOne("MachineLearningWeb.Models.ImageModel", "Image")
-                        .WithMany("ImageTags")
-                        .HasForeignKey("ImageId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
