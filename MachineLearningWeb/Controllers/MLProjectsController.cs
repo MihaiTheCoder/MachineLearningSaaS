@@ -130,7 +130,9 @@ namespace MachineLearningWeb.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok();
+            imageTag.Image = null;
+
+            return Json(imageTag);
         }
 
         [HttpPut("MLProjects/ImageTags")]
@@ -149,7 +151,9 @@ namespace MachineLearningWeb.Controllers
             _context.Entry(imageTagDb).State = EntityState.Detached;
             _context.Update(imageTag);
             await _context.SaveChangesAsync();
-            return Ok();
+
+            imageTag.Image = null;
+            return Json(imageTag);
         }
 
         [HttpDelete("MLProjects/ImageTags/{imageTagID}")]

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace MachineLearningWeb.Models
 {
@@ -13,6 +14,7 @@ namespace MachineLearningWeb.Models
 
         public ImageModel Image { get; set; }
 
+        [Required]
         public RelativeCoords RelativeCoords { get; set; }
 
         public int TagId { get; set; }

@@ -139,25 +139,118 @@
         
         var tagInput = document.getElementById('object-tag');
         var tagContainer = document.getElementById('tags-container');
-        var imgContainer = document.getElementById('img-container');   
-        var currentImageIndex = -1, currentImageId = -1, currentImage = null;
-        var editedImageTagIndex = -1;
-        var currentRelativeCoords = null;    
-        var cropper = null;
+        var imgContainer = document.getElementById('img-container');  
+        var selectedImgDetails = {
+            currentImageIndex: -1, editedImageTagIndex: -1
+        };
         
+        var cropper = null;
+
+        function getCurrentEditedImageTagIndex() {
+            return selectedImgDetails.editedImageTagIndex;
+        }
+
+        function setCurrentEditedImageTagIndex(index) {
+            selectedImgDetails.editedImageTagIndex = index;
+        }
+
+        function onInactiveRegionClicked(rectangleDiv, relativeCoords, index) {
+            rectangleDiv.remove();
+            cropper.crop();
+            cropper.setCropBoxData(convertRelativeToCropBox(relativeCoords));
+            setCurrentEditedImageTagIndex(index);
+            setCurrentRelativeCoords(relativeCoords);            
+        }
+
+        function onImageTagSaved(imageTag) {
+            drawInactiveRegion(getCurrentRelativeCoords(), getCurrentEditedImageTagIndex());
+
+            if (isNewImageTag()) {
+                var imageTags = getCurrentImage().imageTags;
+                imageTags[imageTags.length - 1] = imageTag;
+            }
+            clearCrop();
+        }
+
+        function clearCrop() {
+            cropper.clear();            
+            setCurrentEditedImageTagIndex(-1);            
+        }
+
+        function addOrUpdateImageTag(relativeCoords) {
+            var editedImageTag = getEditedImageTag();
+            if (editedImageTag == null) {
+                var image = getCurrentImage()
+                image.imageTags.push({ imageId: image.id, relativeCoords: relativeCoords })
+                setCurrentEditedImageTagIndex(image.imageTags.length - 1);
+            } else {
+                editedImageTag.relativeCoords = relativeCoords;
+            }
+        }
+
+        function getCurrentImage() {
+            return images[getCurrentImageIndex()]
+        }
+
+        function getCurrentImageIndex() {
+            return selectedImgDetails.currentImageIndex;
+        }
+
+        function setCurrentImageIndex(index) {
+            selectedImgDetails.currentImageIndex = index;
+        }
+
+        function getEditedImageTag() {
+            var editedImageTagIndex = getCurrentEditedImageTagIndex();
+            if (editedImageTagIndex < 0)
+                return null;
+
+            var imageTag = images[getCurrentImageIndex()].imageTags[editedImageTagIndex];
+            imageTag.index = editedImageTagIndex;
+            return imageTag;
+        }
+
+        function isNewImageTag() {
+            var editedImageTag = getEditedImageTag();
+            if (editedImageTag == null)
+                return false;
+            else
+                return !Number.isInteger(editedImageTag.id);            
+        }
+
+        function getCurrentImageDiv() {
+            return imgContainer.children[getCurrentImageIndex()];
+        }
+
+        function getCurrentRelativeCoords() {
+            var editedImageTag = getEditedImageTag();
+            if (editedImageTag == null)
+                return null;
+            else
+                return editedImageTag.relativeCoords;
+        } 
+
+        function setCurrentRelativeCoords(relativeCoords) {
+            var editedImageTag = getEditedImageTag();
+            if (editedImageTag == null)
+                return null;
+            else
+                editedImageTag.relativeCoords = relativeCoords;
+        }        
 
         $(document).on('keyup', function (evt) {
             evt = evt || window.event;
             console.log("keydown: " + evt.keyCode);
             var stringKeyCode = String.fromCharCode(evt.keyCode);
             var intKeyCode = parseInt(stringKeyCode);
-            if (currentRelativeCoords != null && !isNaN(intKeyCode)) {
+            var editedImageTag = getEditedImageTag();
+            if (editedImageTag != null && !isNaN(intKeyCode)) {
                 var tag = getTag(intKeyCode);
-                var data = { imageId: currentImageId, relativeCoords: currentRelativeCoords, tagId: tag.id }
+                var data = { imageId: getCurrentImage().imageModelId, relativeCoords: getCurrentRelativeCoords(), tagId: tag.id }
                 type = "post"
                 if (tag != null) {
-                    if (editedImageTagIndex >= 0) {
-                        data.id = images[currentImageIndex].imageTags[editedImageTagIndex].id;
+                    if (!isNewImageTag()) {                        
+                        data.id = editedImageTag.id;
                         type = "put";
                     }
 
@@ -167,15 +260,14 @@
                         data: data,
                         success: function (response) {
                             console.log(response);
-                            drawInactiveRegion(currentRelativeCoords, editedImageTagIndex);
-                            clearCrop();
+                            onImageTagSaved(response);
                         }
                     });
                 }
             } else if (evt.keyCode == 46) {//delete
-                if (currentImageIndex < 0 || editedImageTagIndex < 0)
+                if (getCurrentImageIndex() < 0 || getEditedImageTag() < 0)
                     return;
-                imageTagId = images[currentImageIndex].imageTags[editedImageTagIndex].id;
+                imageTagId = getEditedImageTag().id;
                 $.ajax({
                     url: imageTagUrlTemplate + `/${imageTagId}`,
                     type: 'DELETE',
@@ -184,16 +276,9 @@
                         clearCrop();
                     }
                 });
-            }            
-
+            }
             console.log(stringKeyCode);
-        });
-
-        function clearCrop() {
-            cropper.clear();
-            editedImageTagIndex = -1;
-            currentRelativeCoords = null;
-        }
+        });        
 
         function getTag(shortcut) {
             for (var i = 0; i < all_tags.length; i++) {
@@ -230,24 +315,44 @@
         }
 
         function onCropperReady() {            
+            drawInactiveRegions();
+        }
+
+        function drawInactiveRegions(shouldDraw) {
+            var currentImage = getCurrentImage();
             for (var i = 0; i < currentImage.imageTags.length; i++) {
-                var coords = currentImage.imageTags[i].relativeCoords;       
-                drawInactiveRegion(coords, i);
+                var currentImageTag = currentImage.imageTags[i];
+
+                if (shouldDraw == null || shouldDraw(i, currentImageTag)) {
+                    var coords = currentImage.imageTags[i].relativeCoords;
+                    drawInactiveRegion(coords, i);
+                }                
             }
         }
+        var timer_id;
+        function onImageResized() {
+            this.clearTimeout(timer_id);
+            setTimeout(function () {
+                $(imgContainer).find(".rectangle:visible").remove();
+                var currentEditedIndex = getCurrentEditedImageTagIndex();
+                drawInactiveRegions((index, imageTag) => index != currentEditedIndex);
+            }, 200);            
+        }
+
+        $(function () {            
+            $(window).resize(function () {
+                onImageResized();
+            });
+        });
 
         function drawInactiveRegion(relativeCoords, imageTagIndex) {
             drawRectangle(relativeCoords, imageTagIndex, function (rectangleDiv, relativeCoords, index) {
-                rectangleDiv.remove();
-                cropper.crop();
-                cropper.setCropBoxData(convertRelativeToCropBox(relativeCoords));
-                editedImageTagIndex = index;
-                currentRelativeCoords = relativeCoords;
+                onInactiveRegionClicked(rectangleDiv, relativeCoords, index);                
             });
         }
 
         function drawRectangle(relativeCoords, index, onClickFunc) {
-            var div = imgContainer.children[currentImageIndex];
+            var div = getCurrentImageDiv();
             var cropBox = convertRelativeToCropBox(relativeCoords);
             var rectangleDiv = document.createElement("div");
             rectangleDiv.style.left = cropBox.left + "px";
@@ -262,22 +367,15 @@
             div.appendChild(rectangleDiv);
         }
 
-        function setCropper(div, relativeCoords) {
-            getCropBoxData(relativeCoords)
-            console.log(div);
-        }
-
         function showImage(index) {
             node = imgContainer.children[index];
-            if (currentImageIndex != -1) {
-                imgContainer.children[currentImageIndex].style.display = 'none';
+            if (getCurrentImageIndex() != -1) {
+                getCurrentImageDiv().style.display = 'none';
             }
             node.style.display = 'block';
-            currentImageIndex = index;
-            currentImage = images[currentImageIndex];
-            currentImageId = currentImage.imageModelId;
-
-            cropper = new Cropper(node.children[0], {
+            setCurrentImageIndex(index)
+            var image = node.children[0];
+            cropper = new Cropper(image, {
                 autoCrop: false,
                 viewMode: 1,
                 preview: '.img-preview',
@@ -288,18 +386,14 @@
                     console.log("cropEnd");
                     cropBox = cropper.getCropBoxData();
                     canvasData = cropper.getCanvasData();
-                    var relativeCoords = convertCropBoxToRelative(cropBox);                    
 
-                    currentRelativeCoords = relativeCoords;
+                    var relativeCoords = convertCropBoxToRelative(cropBox);
 
-                    absoluteCoords = {
-                        left: canvasData.naturalWidth * relativeCoords.left, width: canvasData.naturalWidth * relativeCoords.width,
-                        top: canvasData.top * relativeCoords.top, height: canvasData.naturalHeight * relativeCoords.height
-                    };
-
-                    console.log(relativeCoords)
-                    console.log(absoluteCoords);
+                    addOrUpdateImageTag(relativeCoords);
                 }
+            });
+            image.addEventListener('zoom', (event) => {
+                onImageResized();
             });
         }
 
@@ -321,6 +415,6 @@
             }
 
             showImage(0);
-        }       
+        }
     </script>
 }
